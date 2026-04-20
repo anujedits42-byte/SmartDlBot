@@ -1,11 +1,10 @@
 import os
 import logging
 import time
-from pathlib import Path
-from typing import Optional
-import yt_dlp
 import asyncio
+from pathlib import Path
 
+import yt_dlp
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.enums import ParseMode
@@ -25,12 +24,24 @@ class InstagramDownloader:
 
     def __init__(self, temp_dir: Path):
         self.temp_dir = temp_dir
+        self.store = {}        # callback safe storage
+        self.cache = {}        # format cache (speed boost)
 
+    # ----------------------------
+    # GET FORMATS (FAST + CACHED)
+    # ----------------------------
     def get_formats(self, url):
+
+        if url in self.cache:
+            return self.cache[url]
+
         ydl_opts = {
             'quiet': True,
-            'cookiefile': Config.COOKIES_FILE if os.path.exists(Config.COOKIES_FILE) else None
+            'noplaylist': True,
         }
+
+        if os.path.exists(Config.COOKIES_FILE):
+            ydl_opts['cookiefile'] = Config.COOKIES_FILE
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -51,37 +62,53 @@ class InstagramDownloader:
                     seen.add(f["quality"])
                     unique.append(f)
 
-            return unique[:6]  # limit buttons
+            result = unique[:6]
 
+            self.cache[url] = result
+            return result
+
+    # ----------------------------
+    # DOWNLOAD
+    # ----------------------------
     async def download(self, url, format_id):
 
         ydl_opts = {
             'format': format_id,
             'outtmpl': str(self.temp_dir / '%(title)s.%(ext)s'),
-            'cookiefile': Config.COOKIES_FILE if os.path.exists(Config.COOKIES_FILE) else None,
             'quiet': True,
-            'merge_output_format': 'mp4'
+            'merge_output_format': 'mp4',
+            'noplaylist': True,
         }
+
+        if os.path.exists(Config.COOKIES_FILE):
+            ydl_opts['cookiefile'] = Config.COOKIES_FILE
 
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self._download, ydl_opts, url)
 
     def _download(self, opts, url):
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-            file = ydl.prepare_filename(info)
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                file = ydl.prepare_filename(info)
 
-            if os.path.exists(file):
-                return file, info.get("title", "Instagram Video")
+                if os.path.exists(file):
+                    return file, info.get("title", "Instagram Video")
+
+        except Exception as e:
+            logger.error(f"Download error: {e}")
 
         return None, None
 
 
+# ----------------------------
+# HANDLERS
+# ----------------------------
 def setup_ig_handlers(app: Client):
 
     ig = InstagramDownloader(Config.TEMP_DIR)
 
-    # STEP 1 → Send quality buttons
+    # STEP 1 → GET QUALITIES
     @app.on_message(filters.regex(r"^[/.]ig(\s+https?://\S+)?$"))
     async def ig_handler(client: Client, message: Message):
 
@@ -102,8 +129,14 @@ def setup_ig_handlers(app: Client):
                 await status.edit("❌ No formats found")
                 return
 
+            uid = str(time.time())
+            ig.store[uid] = url
+
             buttons = [
-                [InlineKeyboardButton(f["quality"], callback_data=f"ig|{f['format_id']}|{url}")]
+                [InlineKeyboardButton(
+                    f["quality"],
+                    callback_data=f"ig|{f['format_id']}|{uid}"
+                )]
                 for f in formats
             ]
 
@@ -116,26 +149,41 @@ def setup_ig_handlers(app: Client):
             logger.error(e)
             await status.edit("❌ Error fetching qualities")
 
-    # STEP 2 → Handle button click
+    # STEP 2 → DOWNLOAD
     @app.on_callback_query(filters.regex(r"^ig\|"))
     async def ig_callback(client: Client, query: CallbackQuery):
 
-        _, format_id, url = query.data.split("|")
+        try:
+            _, format_id, uid = query.data.split("|")
 
-        await query.message.edit("📥 Downloading...")
+            url = ig.store.get(uid)
 
-        file, title = await ig.download(url, format_id)
+            if not url:
+                await query.message.edit("❌ Session expired. Send link again.")
+                return
 
-        if not file:
-            await query.message.edit("❌ Download failed")
-            return
+            await query.message.edit("📥 Downloading...")
 
-        await client.send_video(
-            chat_id=query.message.chat.id,
-            video=file,
-            caption=f"🎬 **{title}**",
-            parse_mode=ParseMode.MARKDOWN
-        )
+            file, title = await ig.download(url, format_id)
 
-        os.remove(file)
-        await query.message.delete()
+            if not file:
+                await query.message.edit("❌ Download failed")
+                return
+
+            try:
+                await client.send_video(
+                    chat_id=query.message.chat.id,
+                    video=file,
+                    caption=f"🎬 **{title}**",
+                    parse_mode=ParseMode.MARKDOWN
+                )
+
+            finally:
+                if os.path.exists(file):
+                    os.remove(file)
+
+            await query.message.delete()
+
+        except Exception as e:
+            logger.error(f"Callback error: {e}")
+            await query.message.edit("❌ Something went wrong")
