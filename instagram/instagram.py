@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Config:
     TEMP_DIR = Path("temp")
-    COOKIES_FILE = "cookies.txt"
+    COOKIES_FILE = "cookies_instagram.txt"
 
 Config.TEMP_DIR.mkdir(exist_ok=True)
 
