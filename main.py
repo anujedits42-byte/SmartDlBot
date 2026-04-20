@@ -54,13 +54,12 @@ async def send_start_message(client, message):
     "🧵 Threads\n"
     "🎧 Music\n\n"
     "<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n\n"
-    "• <b>Just send me a link</b> and I will download it for you instantly ⚡\n\n"
+    "• <b>Just send me a link</b> and I will download it instantly ⚡\n\n"
     "<b>💡 Note:</b> The bot also works in groups.\n"
-    "If you want to use it in a group, press the button below 👇"
-        "<b>━━━━━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-        "<b>Don't Forget To <a href='https://t.me/anujeditbyak'>Join Here</a> For Updates!</b>"
-    )
-
+    "If you want to use it in a group, press the button below 👇\n\n"
+    "<b>━━━━━━━━━━━━━━━━━━━━━━━━━━</b>\n"
+    "<b>🔔 Don't Forget To <a href='https://t.me/anujeditbyak'>Join Here</a> For Updates!</b>"
+)
     await message.reply_text(
         start_message,
         parse_mode=ParseMode.HTML,
