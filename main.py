@@ -63,7 +63,7 @@ async def send_start_message(client, message):
     
     photo_url = "https://h.uguu.se/vCWUTJSx.jpg"
 
-await message.reply_photo(
+    await message.reply_photo(
     photo=photo_url,
     caption=start_message,
         parse_mode=ParseMode.HTML,
