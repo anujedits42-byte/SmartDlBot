@@ -9,12 +9,10 @@ import os
 from config import API_ID, API_HASH, BOT_TOKEN
 from format import build_quality_ui
 from youtube.youtube import download_video_sync, download_audio_sync
-from pyrogram.enums import ParseMode
-from pyrogram.types import CallbackQuery
 
 
 # ---------------- FLASK SERVER ----------------
-flask_app = Flask(name)
+flask_app = Flask(__name__)
 
 @flask_app.route("/")
 def home():
@@ -35,6 +33,15 @@ app = Client(
     bot_token=BOT_TOKEN
 )
 
+from handlers.downloader import setup_downloader_handler
+from handlers.pinterest import setup_pinterest_handler
+from handlers.dl import setup_dl_handlers
+from handlers.spotify import setup_spotify_handler
+from handlers.instagram import setup_ig_handlers
+from handlers.restart import setup_restart_handler
+from handlers.admin import setup_admin_handler
+from handlers.logs import setup_logs_handler
+from handlers.tiktok import setup_tt_handler
 
 # ---------------- LINK HANDLER ----------------
 @app.on_message(filters.regex(r"^(https?://).+"))
