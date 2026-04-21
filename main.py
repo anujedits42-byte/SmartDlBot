@@ -328,15 +328,15 @@ async def back(client, query: CallbackQuery):
     await query.answer()
 
     await query.message.edit_text(
-        "<b>Send me any link to download 🚀</b>",
-        parse_mode=ParseMode.HTML,
-        reply_markup=InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("⚙️ Help", callback_data="help_menu"),
-                InlineKeyboardButton("ℹ️ About", callback_data="about_me")
-            ]
+    "<b>Send me any link to download 🚀</b>",
+    parse_mode=ParseMode.HTML,
+    reply_markup=InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("⚙️ Help", callback_data="help_menu"),
+            InlineKeyboardButton("ℹ️ About", callback_data="about_me")
+        ]
     ]),
-    disable_web_page_preview=True,
+    disable_web_page_preview=True
 )
 
 # Final confirmation that the bot has started
