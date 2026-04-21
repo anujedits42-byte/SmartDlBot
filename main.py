@@ -163,9 +163,12 @@ async def start_menu_callback(client: Client, callback_query: CallbackQuery):
 "<b>🔔 Don't Forget To <a href='https://t.me/anujeditbyak'>Join Here</a> For Updates!</b>"
     )
 
-    await callback_query.message.edit_text(
-        start_message,
-        parse_mode=ParseMode.HTML,
+    photo_url = "https://h.uguu.se/vCWUTJSx.jpg"
+
+    await message.reply_photo(
+    photo=photo_url,
+    caption=start_message,
+    parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("⚙️ Help", callback_data="help_menu"),
              InlineKeyboardButton("➕ Add Me", url="https://t.me/social_media_downloader_ak_bot?startgroup=new&admin=post_messages+delete_messages+edit_messages+pin_messages+change_info+invite_users+promote_members")],
