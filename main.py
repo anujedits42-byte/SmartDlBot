@@ -1,5 +1,6 @@
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.enums import ParseMode
 import asyncio
 from threading import Thread
 from flask import Flask
@@ -11,7 +12,7 @@ from youtube.youtube import download_video_sync, download_audio_sync
 
 
 # ---------------- FLASK SERVER ----------------
-flask_app = Flask(__name__)
+flask_app = Flask(name)
 
 @flask_app.route("/")
 def home():
@@ -24,7 +25,7 @@ def run_flask():
 Thread(target=run_flask, daemon=True).start()
 
 
-# ---------------- PYROGRAM BOT ----------------
+# ---------------- BOT ----------------
 app = Client(
     "bot",
     api_id=API_ID,
@@ -37,7 +38,6 @@ app = Client(
 @app.on_message(filters.regex(r"^(https?://).+"))
 async def link_handler(client, message):
     url = message.text.strip()
-
     try:
         await message.reply_text(
             "📥 Select Quality 👇",
@@ -49,7 +49,7 @@ async def link_handler(client, message):
 
 # ---------------- CALLBACK HANDLER ----------------
 @app.on_callback_query()
-async def callback_handler(client, callback_query):
+async def callback_handler(client, callback_query: CallbackQuery):
     data = callback_query.data
     await callback_query.answer()
 
@@ -64,7 +64,6 @@ async def callback_handler(client, callback_query):
             await callback_query.message.edit_text("📥 Downloading Video...")
 
             result = download_video_sync(url, quality)
-
             if not result:
                 return await callback_query.message.edit_text("❌ Failed")
 
@@ -82,7 +81,6 @@ async def callback_handler(client, callback_query):
             await callback_query.message.edit_text("🎵 Downloading Audio...")
 
             result = download_audio_sync(url)
-
             if not result:
                 return await callback_query.message.edit_text("❌ Failed")
 
@@ -100,7 +98,6 @@ async def callback_handler(client, callback_query):
             await callback_query.message.edit_text("⚡ Getting Best Quality...")
 
             result = download_video_sync(url)
-
             if not result:
                 return await callback_query.message.edit_text("❌ Failed")
 
@@ -111,7 +108,6 @@ async def callback_handler(client, callback_query):
             )
 
             os.remove(result["file_path"])
-
 
     except Exception:
         await callback_query.message.edit_text("❌ Error Occurred")
