@@ -9,6 +9,8 @@ import os
 from config import API_ID, API_HASH, BOT_TOKEN
 from format import build_quality_ui
 from youtube.youtube import download_video_sync, download_audio_sync
+from pyrogram.enums import ParseMode
+from pyrogram.types import CallbackQuery
 
 
 # ---------------- FLASK SERVER ----------------
