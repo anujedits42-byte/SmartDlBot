@@ -1,7 +1,7 @@
 {
   "name": "SmartDlBot",
   "description": "A smart Telegram bot with Spotify and MongoDB integration.",
-  "repository": "https://github.com/abirxdhack/SmartDlBot",
+  "repository": "https://github.com/anujedits42-byte/SmartDlBot",
   "keywords": ["telegram", "bot", "docker", "flask", "ffmpeg"],
   "stack": "container",
   "env": {
