@@ -11,7 +11,7 @@ from youtube.youtube import download_video_sync, download_audio_sync
 
 
 # ---------------- FLASK SERVER ----------------
-flask_app = Flask(name)
+flask_app = Flask(__name__)
 
 @flask_app.route("/")
 def home():
