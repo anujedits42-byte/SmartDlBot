@@ -139,10 +139,7 @@ async def help_cmd(client, message):
         "<b>Send link directly also works ✅</b>"
     )
 
-    await message.reply_text(
-        text,
-        parse_mode=ParseMode.HTML
-    )
+    await message.reply_text(text, parse_mode=ParseMode.HTML)
 
     try:
         await query.message.edit_text(
@@ -172,8 +169,7 @@ async def about_cmd(client, message):
         text,
         parse_mode=ParseMode.HTML,
         disable_web_page_preview=True
-)
-
+    )
     try:
         await query.message.edit_text(
             text,
