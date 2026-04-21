@@ -117,16 +117,199 @@ async def quality_handler(client, callback_query: CallbackQuery):
             await callback_query.message.edit_text("📥 Downloading Best Quality...")
 
             result = download_video_sync(url)
+# ---------------- UNIVERSAL LINK HANDLER ----------------
+@app.on_message(filters.regex(r"^(https?://).+"))
+async def link_handler(client, message):
+    url = message.text.strip()
+
+    try:
+        await message.reply_text(
+            "📥 Choose Quality 👇",
+            reply_markup=build_quality_ui(url)
+        )
+    except:
+        await message.reply_text("❌ Unsupported link")
+
+
+# ---------------- UNIFIED CALLBACK ENGINE ----------------
+@app.on_callback_query()
+async def callback_handler(client, callback_query: CallbackQuery):
+    data = callback_query.data
+    await callback_query.answer()
+
+    try:
+        parts = data.split("|")
+
+        action = parts[0]
+        url = parts[1]
+        quality = parts[2] if len(parts) > 2 else None
+
+        # ---------------- VIDEO ----------------
+        if action == "vid":
+            await callback_query.message.edit_text("📥 Downloading Video...")
+
+            result = download_video_sync(url, quality)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Download Failed")
+                return
 
             await client.send_video(
                 chat_id=callback_query.message.chat.id,
                 video=result["file_path"],
-                caption="📥 Done"
+                caption="🎬 Download Complete"
             )
 
             os.remove(result["file_path"])
 
-    except Exception:
+
+        # ---------------- AUDIO ----------------
+        elif action == "audio":
+            await callback_query.message.edit_text("🎵 Extracting Audio...")
+
+            result = download_audio_sync(url)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Audio Failed")
+                return
+
+            await client.send_audio(
+                chat_id=callback_query.message.chat.id,
+                audio=result["file_path"],
+                caption="🎵 Audio Ready"
+            )
+
+            os.remove(result["file_path"])
+
+
+        # ---------------- BEST QUALITY ----------------
+        elif action == "best":
+            await callback_query.message.edit_text("⚡ Fetching Best Quality...")
+
+            result = download_video_sync(url)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Failed")
+                return
+
+            await client.send_video(
+                chat_id=callback_query.message.chat.id,
+                video=result["file_path"],
+                caption="⚡ Best Quality Downloaded"
+            )
+
+            os.remove(result["file_path"])
+
+
+    except Exception as e:
+        await callback_query.message.edit_text("❌ Error Occurred")
+
+            await client.send_video(
+                chat_id=callback_query.message.chat.id,
+                video=result["file_path"],
+                caption="🎬 Download Complete"
+            )
+
+            os.remove(result["file_path"])
+
+
+        # ---------------- AUDIO ----------------
+        elif action == "audio":
+            await callback_query.message.edit_text("🎵 Extracting Audio...")
+
+            result = download_audio_sync(url)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Audio Failed")
+                return
+
+            await client.send_audio(
+                chat_id=callback_query.message.chat.id,
+                audio=result["file_path"],
+                caption="🎵 Audio Ready"
+            )
+
+            os.remove(result["file_path"])
+
+
+        # ---------------- BEST QUALITY ----------------
+        elif action == "best":
+            await callback_query.message.edit_text("⚡ Fetching Best Quality...")
+
+            result = download_video_sync(url)
+
+            if not result:
+       # ---------------- UNIFIED CALLBACK ENGINE ----------------
+@app.on_callback_query()
+async def callback_handler(client, callback_query: CallbackQuery):
+    data = callback_query.data
+    await callback_query.answer()
+
+    try:
+        parts = data.split("|")
+
+        action = parts[0]
+        url = parts[1]
+        quality = parts[2] if len(parts) > 2 else None
+
+        # ---------------- VIDEO ----------------
+        if action == "vid":
+            await callback_query.message.edit_text("📥 Downloading Video...")
+
+            result = download_video_sync(url, quality)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Download Failed")
+                return
+
+            await client.send_video(
+                chat_id=callback_query.message.chat.id,
+                video=result["file_path"],
+                caption="🎬 Download Complete"
+            )
+
+            os.remove(result["file_path"])
+
+
+        # ---------------- AUDIO ----------------
+        elif action == "audio":
+            await callback_query.message.edit_text("🎵 Extracting Audio...")
+
+            result = download_audio_sync(url)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Audio Failed")
+                return
+
+            await client.send_audio(
+                chat_id=callback_query.message.chat.id,
+                audio=result["file_path"],
+                caption="🎵 Audio Ready"
+            )
+
+            os.remove(result["file_path"])
+
+
+        # ---------------- BEST QUALITY ----------------
+        elif action == "best":
+            await callback_query.message.edit_text("⚡ Fetching Best Quality...")
+
+            result = download_video_sync(url)
+
+            if not result:
+                await callback_query.message.edit_text("❌ Failed")
+                return
+
+            await client.send_video(
+                chat_id=callback_query.message.chat.id,
+                video=result["file_path"],
+                caption="⚡ Best Quality Downloaded"
+            )
+
+            os.remove(result["file_path"])
+
+
+    except Exception as e:
         await callback_query.message.edit_text("❌ Error Occurred")
         
 # Setup handlers
